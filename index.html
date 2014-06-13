@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+    <head>
+        <title>Terraflan :: Dev 0 :: 20140612</title>
+        <link rel="stylesheet" href="css/main.css">
+        <!--<script src="src/thirdparty/toast-1.2.3.min.js"></script>-->
+        <script src="src/thirdparty/toast.js"></script>
+        <!--<script src="src/thirdparty/audio-fx.min.js"></script>-->
+        <script src="src/thirdparty/audio-fx.js"></script>
+        <!--<script src="src/thirdparty/seedrandom.min.js"></script>-->
+        <script src="src/thirdparty/seedrandom.js"></script>
+        <script src="src/main.js"></script>
+        <script src="src/loader.js"></script>
+    </head>
+    <body>
+        <canvas id="appcanvas"></canvas>
+        <div id="acknowledge">
+            <a class="acknowledge b u">With help from</a>
+            <a class="acknowledge" href="https://github.com/pyrsmk/toast" target="_blank">https://github.com/pyrsmk/toast</a>
+            <a class="acknowledge" href="https://github.com/jakesgordon/javascript-audio-fx" target="_blank">https://github.com/jakesgordon/javascript-audio-fx</a>
+            <a class="acknowledge" href="http://davidbau.com/archives/2010/01/30/random_seeds_coded_hints_and_quintillions.html" target="_blank">http://davidbau.com/archives/2010/01/30/random_seeds_coded_hints_and_quintillions.html</a>
+        </div>
+        <script>Terraflan.loader.load(function () { Terraflan.setup(document.getElementById("appcanvas")); })</script>
+    </body>
+</html>
