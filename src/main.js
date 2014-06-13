@@ -47,6 +47,15 @@
  * render loop begin ?
  */
 
+/* Storage
+ * Storage will use localStorage
+ * can hold 2.5M (2,560,000) characters (5120000 Bytes)
+ *
+ * Each chunk is 64^2 tiles
+ * 4096 Tiles = 4096 Char = 8192 Bytes
+ * 625 Chunks Available EXACTLY
+ */
+
 var Terraflan = (function () {
     "use strict";
 
@@ -123,16 +132,6 @@ var Terraflan = (function () {
         } else {
             console.error("AudioFX not supported");
             alert("Audio Not Supported");
-        }
-
-        //@TODO: Remove this testing
-        // Test HTML Storage
-        try {
-            var works = 'localStorage' in window && window['localStorage'] !== null;
-            console.log("Local Storage supported");
-        } catch (e) {
-            console.log("Local Storage not supported");
-            alert("Saving Not Supported");
         }
 
         // Setup context

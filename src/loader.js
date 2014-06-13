@@ -18,7 +18,7 @@ Terraflan.loader = (function () {
     //@TODO: Create better loading sequence
     self.load = function (callback) {
         // Load Scripts && Data
-        toast(self.scriptList,function () { self.loadAudio(callback); }); // Change callback order
+        toast(self.scriptList, function () { self.loadAudio(callback); }); // Change callback order
 
         // Load Resources
 
