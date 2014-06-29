@@ -10,9 +10,11 @@ Terraflan.loader = (function () {
 
     self.scriptList = [
         ["src/generate.js", function () { return Terraflan.generate; }],
+        ["src/input.js", function () { return Terraflan.InputController; }],
         ["src/data/tiles.js", function () { return Terraflan.Data.Tiles; }],
         ["src/data/images.js", function () { return Terraflan.Data.Images; }],
-        ["src/data/sounds.js", function () { return Terraflan.Data.Sounds; }]
+        ["src/data/sounds.js", function () { return Terraflan.Data.Sounds; }],
+        ["src/data/controls.js", function () { return Terraflan.Data.Controls; }]
     ];
 
     //@TODO: Create better loading sequence
