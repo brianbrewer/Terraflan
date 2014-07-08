@@ -74,8 +74,13 @@ var Terraflan = (function () {
         CHUNK_WIDTH: 64,
         CHUNK_HEIGHT: 64,
         SCREEN_WIDTH: 800,
-        SCREEN_HEIGHT: 600
+        SCREEN_HEIGHT: 600,
+        WORLD_WIDTH: 3,
+        WORLD_HEIGHT: 3
     };
+
+    // Chunks
+    self.Chunk = [];
 
     // Sub Module / Object Stubs
     self.Data = {};
@@ -85,12 +90,19 @@ var Terraflan = (function () {
     //@TODO: Timestep
     self.update = function () {
 
+        // Draw Tiles
+
+
+        /*
+         * @TODO: Remove maybe
+         *
         // Update
         self.PlayerController.update();
         self.InputController.update();
 
         // Render
         self.RenderController.update();
+        */
 
         // Run Again
         window.setTimeout(self.update, 1000 / 60); // 60 FPS
@@ -100,7 +112,10 @@ var Terraflan = (function () {
         var canvas,
             context,
             gradient,
-            type; //@FIXME Remove type
+            chunkX,
+            chunkY,
+            tileX,
+            tileY;
 
         // Resize Canvas
         canvaselement.width = self.STATIC.SCREEN_WIDTH;
@@ -110,6 +125,7 @@ var Terraflan = (function () {
         canvaselement.style.left = (window.innerWidth - self.STATIC.SCREEN_WIDTH) / 2 + "px";
 
         // Reposition Fluff :: Move at some point
+        //@TODO: move around / remove
         document.getElementById("acknowledge").style.top = self.STATIC.SCREEN_HEIGHT + 10 + "px";
 
         // Setup Reposition Hook
@@ -122,13 +138,6 @@ var Terraflan = (function () {
         // Test Sounds Library
         if (AudioFX.supported) {
             console.log("AudioFX supported, version " + AudioFX.version);
-            for (type in {ogg: "ogg", mp3: "mp3", m4a: "m4a", wav: "wav", loop: "loop"}) {
-                if (AudioFX.supported[type]) {
-                    console.log(type + " supported");
-                } else {
-                    console.log(type + " not supported");
-                }
-            }
         } else {
             console.error("AudioFX not supported");
             alert("Audio Not Supported");
@@ -144,6 +153,22 @@ var Terraflan = (function () {
         gradient.addColorStop(1, "#FFF");
         context.fillStyle = gradient;
         context.fill();
+
+        //@FIXME Setup chunks
+        for (chunkX = 0; chunkX < self.STATIC.WORLD_WIDTH; chunkX += 1) {
+            self.Chunk[chunkX] = [];
+            for (chunkY = 0; chunkY < self.STATIC.WORLD_HEIGHT; chunkY += 1) {
+                self.Chunk[chunkX][chunkY] = [];
+                for (tileX = 0; tileX < self.STATIC.CHUNK_WIDTH; tileX += 1) {
+                    self.Chunk[chunkX][chunkY][tileX] = [];
+                    for (tileY = 0; tileY < self.STATIC.CHUNK_HEIGHT; tileY += 1) {
+                        self.Chunk[chunkX][chunkY][tileX][tileY] = 0;
+                    }
+                }
+            }
+        }
+        
+        
     };
 
 	return self;

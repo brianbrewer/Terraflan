@@ -8,9 +8,7 @@
                 65
             ],
             Controller: [],
-            Mouse: [
-                "Left"
-            ],
+            Mouse: [],
             Mobile: []
         },
         MoveRight: {

@@ -131,7 +131,7 @@ Terraflan.InputController = (function () {
 
         // Add mouse handler callbacks
         for (i = 0; i < Terraflan.Data.Controls[actionName].Mouse.length; i += 1) {
-            // Mouse codes are M1, M2 or M3
+            // Mouse codes are MLeft, MRight, MUp, MDown
             mousecode = "M" + Terraflan.Data.Controls[actionName].Mouse[i];
 
             console.log(mousecode);
