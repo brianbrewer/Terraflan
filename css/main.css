@@ -19,6 +19,7 @@ html, document, body {
     display: block;
     text-align: center;
     padding-top: 5px;
+    display: none;
 }
 
 .acknowledge:hover {

@@ -28,6 +28,14 @@
             Mouse: [],
             Mobile: []
         },
+        Crouch: {
+            Keyboard: [
+                83
+            ],
+            Controller: [],
+            Mouse: [],
+            Mobile: []
+        },
         Cursor: {
             Keyboard: [],
             Controller: [],

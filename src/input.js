@@ -156,6 +156,19 @@ Terraflan.InputController = (function () {
     self.update = function () {
         // If keystate open, run possible tick state of action
         // Work out those later :D
+
+        // Keyboard State Tick
+        var key, i;
+        for (key in keyState) {
+            if (keyState.hasOwnProperty(key) && keyState[key]) {
+                // Execute all relevant callbacks
+                if (actionHandler["K" + key] && actionHandler["K" + key].tick) {
+                    for (i = 0; i < actionHandler["K" + key].tick.length; i += 1) {
+                        actionHandler["K" + key].tick[i]();
+                    }
+                }
+            }
+        }
     };
 
     getMouseButton = function (e) {

@@ -14,7 +14,8 @@ Terraflan.loader = (function () {
         ["src/data/tiles.js", function () { return Terraflan.Data.Tiles; }],
         ["src/data/images.js", function () { return Terraflan.Data.Images; }],
         ["src/data/sounds.js", function () { return Terraflan.Data.Sounds; }],
-        ["src/data/controls.js", function () { return Terraflan.Data.Controls; }]
+        ["src/data/controls.js", function () { return Terraflan.Data.Controls; }],
+        ["src/data/player.js", function () { return Terraflan.Data.Player; }]
     ];
 
     //@TODO: Create better loading sequence
