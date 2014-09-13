@@ -1,17 +1,42 @@
 // Script for managing input types etc.
-// Also responsible for mobile overlay
+// Also responsible for mobile overlay*
 
 /*jslint browser: true, devel: true */
 /*global Terraflan*/
+
+/*
+ * Keyboard Codes -
+ * Kx : x is a keyCode
+ *
+ * Mouse Codes -
+ * MLeft : LMB
+ * MRight : RMB
+ * MMiddle : MMB
+ * MUp : Scroll Up
+ * MDown : Scroll Down
+ * Position: x, y of mouse
+ */
+
 Terraflan.InputController = (function () {
     "use strict";
 
     var self = {},
         keyState = {},
         actionHandler = {},
-        getMouseButton;
+        buttonState = [[], [], [], []], // Max 4 Controllers
+        getMouseButton,
+        manageControllers,
+        debug = false;
+
+    self.Gamepads = [];
 
     self.setup = function () {
+        var gamepadSupported;
+        // Check for gamepad support
+        gamepadSupported = navigator.getGamepads ||
+            !!navigator.webkitGetGamepads ||
+            !!navigator.webkitGamepads;
+
         // Add keyhandlers
         window.addEventListener("keydown", function (e) {
             var i;
@@ -19,7 +44,7 @@ Terraflan.InputController = (function () {
             if (!keyState[e.keyCode] || false) {
                 keyState[e.keyCode] = true;
 
-                console.log(e.keyCode, "K" + e.keyCode);
+                if (debug) { console.log(e.keyCode, "K" + e.keyCode); }
 
                 // Execute all relevant callbacks
                 if (actionHandler["K" + e.keyCode] && actionHandler["K" + e.keyCode].start) {
@@ -36,7 +61,7 @@ Terraflan.InputController = (function () {
             if (keyState[e.keyCode]) {
                 keyState[e.keyCode] = false;
 
-                console.log(e.keyCode, "K" + e.keyCode);
+                if (debug) { console.log(e.keyCode, "K" + e.keyCode); }
 
                 // Execute all relevant callbacks
                 if (actionHandler["K" + e.keyCode] && actionHandler["K" + e.keyCode].end) {
@@ -54,7 +79,7 @@ Terraflan.InputController = (function () {
 
             button = getMouseButton(e);
 
-            console.log(button, "M" + button);
+            if (debug) { console.log(button, "M" + button); }
 
             // Execute all relevant callbacks
             if (actionHandler["M" + button] && actionHandler["M" + button].start) {
@@ -70,7 +95,7 @@ Terraflan.InputController = (function () {
 
             button = getMouseButton(e);
 
-            console.log(button, "M" + button);
+            if (debug) { console.log(button, "M" + button); }
 
             // Execute all relevant callbacks
             if (actionHandler["M" + button] && actionHandler["M" + button].end) {
@@ -88,7 +113,7 @@ Terraflan.InputController = (function () {
             button = getMouseButton(e);
 
             if (button !== null) {
-                console.log(button, "M" + button);
+                if (debug) { console.log(button, "M" + button); }
 
                 // Execute all relevant callbacks
                 if (actionHandler["M" + button] && actionHandler["M" + button].start) {
@@ -99,7 +124,7 @@ Terraflan.InputController = (function () {
             }
         });
 
-        // Add controller handler (ish)
+        // Add controller handler
         // Add mobile overlay && handlers
     };
 
@@ -113,7 +138,7 @@ Terraflan.InputController = (function () {
             // Keyboard codes start with K eg. K85
             keycode = "K" + Terraflan.Data.Controls[actionName].Keyboard[i];
 
-            console.log(keycode);
+            if (debug) { console.log(keycode); }
 
             //@TODO: Check if state is possible (start, tick end)
 
@@ -134,7 +159,7 @@ Terraflan.InputController = (function () {
             // Mouse codes are MLeft, MRight, MUp, MDown
             mousecode = "M" + Terraflan.Data.Controls[actionName].Mouse[i];
 
-            console.log(mousecode);
+            if (debug) { console.log(mousecode); }
 
             //@TODO: Check if state is possible (start, tick end)
 
@@ -149,11 +174,16 @@ Terraflan.InputController = (function () {
             }
             actionHandler[mousecode][state].push(callback);
         }
+
+        // Add controller handler callbacks
     };
 
-    self.removeActionHandler = function (actionName, state, callback) {};
+    //@TODO: Flesh out
+    self.removeActionHandler = function (actionName, state, callback) {
+        throw ".removeActionHandler not implemented";
+    };
 
-    self.update = function () {
+    self.update = function (delta) {
         // If keystate open, run possible tick state of action
         // Work out those later :D
 
@@ -164,7 +194,7 @@ Terraflan.InputController = (function () {
                 // Execute all relevant callbacks
                 if (actionHandler["K" + key] && actionHandler["K" + key].tick) {
                     for (i = 0; i < actionHandler["K" + key].tick.length; i += 1) {
-                        actionHandler["K" + key].tick[i]();
+                        actionHandler["K" + key].tick[i](delta);
                     }
                 }
             }
@@ -208,6 +238,56 @@ Terraflan.InputController = (function () {
         }
 
         return button;
+    };
+
+    //@TODO: Manage buttonState after controller removal?
+    manageControllers = function () {
+        var rawGamepads,
+            previousGamepadCount,
+            i,
+            j;
+
+        previousGamepadCount = self.Gamepads.length;
+
+        rawGamepads =
+            (navigator.getGamepads && navigator.getGamepads()) ||
+            (navigator.webkitGetGamepads && navigator.webkitGetGamepads());
+
+        // Iterate through raw data
+        if (rawGamepads) {
+            self.Gamepads = [];
+            for (i = 0; i < rawGamepads.length; i += 1) {
+                if (rawGamepads[i]) {
+                    self.Gamepads.push(rawGamepads[i]);
+                }
+            }
+        }
+        if (self.Gamepads.length < previousGamepadCount && debug) {
+            console.log("Gamepad Disconnected");
+        }
+        if (self.Gamepads.length > previousGamepadCount && debug) {
+            console.log("Gamepad Connected");
+        }
+
+        // Check for button presses
+        for (i = 0; i < self.Gamepads.length; i += 1) {
+            for (j = 0; j < self.Gamepads[i].buttons.length; j += 1) {
+
+                // Button Down
+                if (self.Gamepads[i].buttons[j].pressed && !buttonState[i][j]) {
+                    buttonState[i][j] = true;
+
+                    // Add actionHandling code here
+                }
+
+                // Button Up
+                if (!self.Gamepads[i].buttons[j].pressed && buttonState[j][j]) {
+                    buttonState[i][j] = false;
+
+                    // Add actionHandling code here
+                }
+            }
+        }
     };
 
     return self;

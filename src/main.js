@@ -77,7 +77,7 @@
  * Firefox doesn't particularly like drawing a large amount
  *
  * Limit to only drawing the parts of the chunks that are on screen instead of all chunks
- * visible in their entirety
+ * visible in their entirety Doesn't work :<
  *
  * Maybe move to using WebGL to speed up the quad drawing // flat sprites no 3d or complex operations
  */
@@ -86,6 +86,8 @@ var Terraflan = (function () {
     "use strict";
 
 	var self = {},
+        currentTime,
+        previousTime,
         updateChunks,
         updateEntities,
         updateLiquids,
@@ -125,16 +127,24 @@ var Terraflan = (function () {
     self.Audio = {};
     self.Image = {};
 
-    //@TODO: Timestep
+    //@TODO: Timestep // Delta improvement
     self.update = function () {
-        var chunkX, chunkY,
-            floorCameraChunkStartX,
-            floorCameraChunkStartY,
-            floorCameraChunkEndX,
-            floorCameraChunkEndY;
+        var chunkX,
+            chunkY,
+            chunkEndX,
+            chunkEndY,
+            delta;
+
+        // Run Again
+        window.requestAnimationFrame(self.update);
+
+        // Update Delta for smooth movement
+        currentTime = Date.now();
+        delta = currentTime - previousTime;
+        previousTime = currentTime;
 
         // Get input controller to run "tick" handlers
-        Terraflan.InputController.update();
+        Terraflan.InputController.update(delta);
 
         // Make sure camera doesn't break everything
         if (self.WORLD.CAMERA_X < 0) {
@@ -145,40 +155,33 @@ var Terraflan = (function () {
         }
 
         //@FIXME Clear Screen (Cheapo!)
-        acontext.clearRect(0, 0, self.STATIC.SCREEN_WIDTH, self.STATIC.SCREEN_HEIGHT);
-
-        // Find chunks to draw horizontal
-        floorCameraChunkStartX = 0;//Math.floor(self.WORLD.CAMERA_X / (self.STATIC.CHUNK_WIDTH * self.STATIC.TILE_WIDTH));
-        floorCameraChunkEndX = 16;//1 + Math.floor((self.WORLD.CAMERA_X + self.STATIC.SCREEN_WIDTH) / (self.STATIC.CHUNK_WIDTH * self.STATIC.TILE_WIDTH));
-
-        // Find chunks to draw vertical
-        floorCameraChunkStartY = 0;//Math.floor(self.WORLD.CAMERA_Y / (self.STATIC.CHUNK_HEIGHT * self.STATIC.TILE_HEIGHT));
-        floorCameraChunkEndY = 8;//1 + Math.floor((self.WORLD.CAMERA_Y + self.STATIC.SCREEN_WIDTH) / (self.STATIC.CHUNK_HEIGHT * self.STATIC.TILE_HEIGHT));
+        //acontext.clearRect(0, 0, self.STATIC.SCREEN_WIDTH, self.STATIC.SCREEN_HEIGHT);
 
         // Draw cached chunks
-        for (chunkX = floorCameraChunkStartX; chunkX < floorCameraChunkEndX; chunkX += 1) {
-            for (chunkY = floorCameraChunkStartY; chunkY < floorCameraChunkEndY; chunkY += 1) {
+        chunkEndX = Math.ceil((self.WORLD.CAMERA_X + self.STATIC.SCREEN_WIDTH) / (16 * 64));
+        chunkEndY = Math.ceil((self.WORLD.CAMERA_Y + self.STATIC.SCREEN_HEIGHT) / (16 * 64));
+        for (chunkX = Math.floor(self.WORLD.CAMERA_X / (16 * 64)); chunkX < chunkEndX; chunkX += 1) {
+            for (chunkY = Math.floor(self.WORLD.CAMERA_Y / (16 * 64)); chunkY < chunkEndY; chunkY += 1) {
                 acontext.drawImage(self.Cache[chunkX][chunkY], chunkX * self.STATIC.CHUNK_WIDTH * self.STATIC.TILE_WIDTH - self.WORLD.CAMERA_X, chunkY * self.STATIC.CHUNK_HEIGHT * self.STATIC.TILE_HEIGHT - self.WORLD.CAMERA_Y);
             }
         }
 
+        document.getElementById("delta").innerHTML = delta;
+
         // Draw chunk boundries
-        acontext.beginPath();
-        for (chunkX = 0; chunkX < self.STATIC.WORLD_WIDTH; chunkX += 1) {
-            for (chunkY = 0; chunkY < self.STATIC.WORLD_HEIGHT; chunkY += 1) {
-                acontext.rect(chunkX * self.STATIC.CHUNK_WIDTH * self.STATIC.TILE_WIDTH - self.WORLD.CAMERA_X, chunkY * self.STATIC.CHUNK_HEIGHT * self.STATIC.TILE_HEIGHT - self.WORLD.CAMERA_Y, self.STATIC.CHUNK_WIDTH * self.STATIC.TILE_WIDTH, self.STATIC.CHUNK_HEIGHT * self.STATIC.TILE_HEIGHT);
-            }
-        }
-        acontext.stroke();
+//        acontext.beginPath();
+//        for (chunkX = 0; chunkX < self.STATIC.WORLD_WIDTH; chunkX += 1) {
+//            for (chunkY = 0; chunkY < self.STATIC.WORLD_HEIGHT; chunkY += 1) {
+//                acontext.rect(chunkX * self.STATIC.CHUNK_WIDTH * self.STATIC.TILE_WIDTH - self.WORLD.CAMERA_X, chunkY * self.STATIC.CHUNK_HEIGHT * self.STATIC.TILE_HEIGHT - self.WORLD.CAMERA_Y, self.STATIC.CHUNK_WIDTH * self.STATIC.TILE_WIDTH, self.STATIC.CHUNK_HEIGHT * self.STATIC.TILE_HEIGHT);
+//            }
+//        }
+//        acontext.stroke();
 
         // Update Chunks
         // Update Entities
         // Render Game
         // Render UI
         // Stitch
-
-        // Run Again
-        window.requestAnimationFrame(self.update); // 60 FPS Max
     };
 
     self.setup = function (canvaselement) {
@@ -221,22 +224,24 @@ var Terraflan = (function () {
         // Setup context
         context = canvaselement.getContext("2d");
 
-        // Add camera controls
+         // Activate InputHandler
         Terraflan.InputController.setup();
-        Terraflan.InputController.addActionHandler("MoveLeft", "tick", function () {
-            self.WORLD.CAMERA_X -= 10;
+
+        // Add camera controls
+        Terraflan.InputController.addActionHandler("MoveLeft", "tick", function (delta) {
+            self.WORLD.CAMERA_X -= 200 / 1000 * delta;
         });
 
-        Terraflan.InputController.addActionHandler("MoveRight", "tick", function () {
-            self.WORLD.CAMERA_X += 10;
+        Terraflan.InputController.addActionHandler("MoveRight", "tick", function (delta) {
+            self.WORLD.CAMERA_X += 200 / 1000 * delta;
         });
 
-        Terraflan.InputController.addActionHandler("Crouch", "tick", function () {
-            self.WORLD.CAMERA_Y += 10;
+        Terraflan.InputController.addActionHandler("Crouch", "tick", function (delta) {
+            self.WORLD.CAMERA_Y += 200 / 1000 * delta;
         });
 
-        Terraflan.InputController.addActionHandler("Jump", "tick", function () {
-            self.WORLD.CAMERA_Y -= 10;
+        Terraflan.InputController.addActionHandler("Jump", "tick", function (delta) {
+            self.WORLD.CAMERA_Y -= 200 / 1000 * delta;
         });
 
         //@FIXME Setup chunks
@@ -281,6 +286,7 @@ var Terraflan = (function () {
 
         acontext = context; // Horrible sloppy scoping
 
+        previousTime = Date.now();
         self.update(); // Remove later also :D
     };
 
