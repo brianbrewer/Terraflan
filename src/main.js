@@ -66,7 +66,7 @@
  * Example
  *  {
  *     ID:,
- *     Health:,
+ *     Health:
  *  }
  *
  */
@@ -228,20 +228,44 @@ var Terraflan = (function () {
         Terraflan.InputController.setup();
 
         // Add camera controls
-        Terraflan.InputController.addActionHandler("MoveLeft", "tick", function (delta) {
-            self.WORLD.CAMERA_X -= 200 / 1000 * delta;
+        Terraflan.InputController.addActionHandler("MoveLeft", "tick", function (callbackObject) {
+            if (callbackObject.axis) {
+                if (callbackObject.axis < 0) {
+                    self.WORLD.CAMERA_X -= (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+                }
+            } else {
+                self.WORLD.CAMERA_X -= 200 / 1000 * callbackObject.delta;
+            }
         });
 
-        Terraflan.InputController.addActionHandler("MoveRight", "tick", function (delta) {
-            self.WORLD.CAMERA_X += 200 / 1000 * delta;
+        Terraflan.InputController.addActionHandler("MoveRight", "tick", function (callbackObject) {
+            if (callbackObject.axis) {
+                if (callbackObject.axis > 0) {
+                    self.WORLD.CAMERA_X += (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+                }
+            } else {
+                self.WORLD.CAMERA_X += (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+            }
         });
 
-        Terraflan.InputController.addActionHandler("Crouch", "tick", function (delta) {
-            self.WORLD.CAMERA_Y += 200 / 1000 * delta;
+        Terraflan.InputController.addActionHandler("Crouch", "tick", function (callbackObject) {
+            if (callbackObject.axis) {
+                if (callbackObject.axis > 0) {
+                    self.WORLD.CAMERA_Y += (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+                }
+            } else {
+                self.WORLD.CAMERA_Y += (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+            }
         });
 
-        Terraflan.InputController.addActionHandler("Jump", "tick", function (delta) {
-            self.WORLD.CAMERA_Y -= 200 / 1000 * delta;
+        Terraflan.InputController.addActionHandler("Jump", "tick", function (callbackObject) {
+            if (callbackObject.axis) {
+                if (callbackObject.axis < 0) {
+                    self.WORLD.CAMERA_Y -= (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+                }
+            } else {
+                self.WORLD.CAMERA_Y -= (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+            }
         });
 
         //@FIXME Setup chunks

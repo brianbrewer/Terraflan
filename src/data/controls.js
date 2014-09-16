@@ -7,7 +7,10 @@
             Keyboard: [
                 65
             ],
-            Controller: [],
+            Controller: {
+                Button: [],
+                Axis: [0]
+            },
             Mouse: [],
             Mobile: []
         },
@@ -15,7 +18,10 @@
             Keyboard: [
                 68
             ],
-            Controller: [],
+            Controller: {
+                Button: [],
+                Axis: [0]
+            },
             Mouse: [],
             Mobile: []
         },
@@ -24,7 +30,10 @@
                 87,
                 32
             ],
-            Controller: [],
+            Controller: {
+                Button: [],
+                Axis: [1]
+            },
             Mouse: [],
             Mobile: []
         },
@@ -32,13 +41,19 @@
             Keyboard: [
                 83
             ],
-            Controller: [],
+            Controller: {
+                Button: [],
+                Axis: [1]
+            },
             Mouse: [],
             Mobile: []
         },
         Cursor: {
             Keyboard: [],
-            Controller: [],
+            Controller: {
+                Button: [],
+                Axis: []
+            },
             Mouse: [
                 "Position"
             ],
@@ -46,7 +61,10 @@
         },
         Use: {
             Keyboard: [],
-            Controller: [],
+            Controller: {
+                Button: [],
+                Axis: []
+            },
             Mouse: [
                 "Left"
             ],
@@ -54,7 +72,10 @@
         },
         AltUse: {
             Keyboard: [],
-            Controller: [],
+            Controller: {
+                Button: [],
+                Axis: []
+            },
             Mouse: [
                 "Right"
             ],
@@ -64,7 +85,10 @@
             Keyboard: [
                 27
             ],
-            Controller: [],
+            Controller: {
+                Button: [],
+                Axis: []
+            },
             Mouse: [],
             Mobile: []
         },
@@ -72,7 +96,10 @@
             Keyboard: [
                 69
             ],
-            Controller: [],
+            Controller: {
+                Button: [],
+                Axis: []
+            },
             Mouse: [],
             Mobile: []
         }

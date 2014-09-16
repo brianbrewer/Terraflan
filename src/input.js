@@ -1,34 +1,49 @@
 // Script for managing input types etc.
 // Also responsible for mobile overlay*
+// *maybe not
 
 /*jslint browser: true, devel: true */
 /*global Terraflan*/
 
 /*
+ * Internal Action Handler Even Codes
+ * Code : Explanation : Event States Supported
+ *
  * Keyboard Codes -
- * Kx : x is a keyCode
+ * Kx : x is a keyCode : Start, End, Tick
  *
  * Mouse Codes -
- * MLeft : LMB
- * MRight : RMB
- * MMiddle : MMB
- * MUp : Scroll Up
- * MDown : Scroll Down
- * Position: x, y of mouse
+ * MLeft : LMB : Start
+ * MRight : RMB : Start
+ * MMiddle : MMB : Start
+ * MUp : Scroll Up : Start
+ * MDown : Scroll Down : Start
+ * Position: x, y of mouse : Tick
+ *
+ * Controller Codes -
+ * CBx : x is a button : Start, End, Tick
+ * CAx : x is an axis : Start, End, Tick
  */
 
 Terraflan.InputController = (function () {
     "use strict";
 
     var self = {},
-        keyState = {},
         actionHandler = {},
-        buttonState = [[], [], [], []], // Max 4 Controllers
+        keyState = {},
+        mouseState = {},
+        buttonState = [[], [], [], []],
+        axisState = [[], [], [], []],
         getMouseButton,
         manageControllers,
+        constructCallback,
         debug = false;
 
     self.Gamepads = [];
+
+    self.OPTIONS = {
+        axisDeadZone: 0.1
+    };
 
     self.setup = function () {
         var gamepadSupported;
@@ -36,6 +51,10 @@ Terraflan.InputController = (function () {
         gamepadSupported = navigator.getGamepads ||
             !!navigator.webkitGetGamepads ||
             !!navigator.webkitGamepads;
+
+        if (!gamepadSupported) {
+            console.log("No controller support");
+        }
 
         // Add keyhandlers
         window.addEventListener("keydown", function (e) {
@@ -131,13 +150,14 @@ Terraflan.InputController = (function () {
     self.addActionHandler = function (actionName, state, callback) {
         var i,
             keycode,
-            mousecode;
+            mousecode,
+            buttoncode,
+            axiscode;
 
         // Add callbacks to keyboard handlers
         for (i = 0; i < Terraflan.Data.Controls[actionName].Keyboard.length; i += 1) {
             // Keyboard codes start with K eg. K85
             keycode = "K" + Terraflan.Data.Controls[actionName].Keyboard[i];
-
             if (debug) { console.log(keycode); }
 
             //@TODO: Check if state is possible (start, tick end)
@@ -158,7 +178,6 @@ Terraflan.InputController = (function () {
         for (i = 0; i < Terraflan.Data.Controls[actionName].Mouse.length; i += 1) {
             // Mouse codes are MLeft, MRight, MUp, MDown
             mousecode = "M" + Terraflan.Data.Controls[actionName].Mouse[i];
-
             if (debug) { console.log(mousecode); }
 
             //@TODO: Check if state is possible (start, tick end)
@@ -176,6 +195,30 @@ Terraflan.InputController = (function () {
         }
 
         // Add controller handler callbacks
+        for (i = 0; i < Terraflan.Data.Controls[actionName].Controller.Button.length; i += 1) {
+            buttoncode = "CB" + Terraflan.Data.Controls[actionName].Controller.Button[i];
+            if (debug) { console.log(buttoncode); }
+
+            if (!actionHandler[buttoncode]) {
+                actionHandler[buttoncode] = {};
+            }
+            if (!actionHandler[buttoncode][state]) {
+                actionHandler[buttoncode][state] = [];
+            }
+            actionHandler[buttoncode][state].push(callback);
+        }
+        for (i = 0; i < Terraflan.Data.Controls[actionName].Controller.Axis.length; i += 1) {
+            axiscode = "CA" + Terraflan.Data.Controls[actionName].Controller.Axis[i];
+            if (debug) { console.log(axiscode); }
+
+            if (!actionHandler[axiscode]) {
+                actionHandler[axiscode] = {};
+            }
+            if (!actionHandler[axiscode][state]) {
+                actionHandler[axiscode][state] = [];
+            }
+            actionHandler[axiscode][state].push(callback);
+        }
     };
 
     //@TODO: Flesh out
@@ -194,11 +237,14 @@ Terraflan.InputController = (function () {
                 // Execute all relevant callbacks
                 if (actionHandler["K" + key] && actionHandler["K" + key].tick) {
                     for (i = 0; i < actionHandler["K" + key].tick.length; i += 1) {
-                        actionHandler["K" + key].tick[i](delta);
+                        actionHandler["K" + key].tick[i](constructCallback({delta: delta}));
                     }
                 }
             }
         }
+
+        // Gamepad / Controller updates
+        manageControllers(delta);
     };
 
     getMouseButton = function (e) {
@@ -241,11 +287,12 @@ Terraflan.InputController = (function () {
     };
 
     //@TODO: Manage buttonState after controller removal?
-    manageControllers = function () {
+    manageControllers = function (delta) {
         var rawGamepads,
             previousGamepadCount,
             i,
-            j;
+            j,
+            k;
 
         previousGamepadCount = self.Gamepads.length;
 
@@ -269,8 +316,8 @@ Terraflan.InputController = (function () {
             console.log("Gamepad Connected");
         }
 
-        // Check for button presses
         for (i = 0; i < self.Gamepads.length; i += 1) {
+            // Check for button presses
             for (j = 0; j < self.Gamepads[i].buttons.length; j += 1) {
 
                 // Button Down
@@ -278,16 +325,119 @@ Terraflan.InputController = (function () {
                     buttonState[i][j] = true;
 
                     // Add actionHandling code here
+                    if (actionHandler["CB" + j] && actionHandler["CB + j"].start) {
+                        for (k = 0; k < actionHandler["CB + j"].start.length; k += 1) {
+                            actionHandler["CB" + j].start[k](constructCallback({
+                                controller: i,
+                                delta: delta
+                            }));
+                        }
+                    }
                 }
 
+                // Tick
+                /*if (self.Gamepads[i].buttons[j].pressed && !buttonState[i][j]) {
+                    buttonState[i][j] = true;
+
+                    // Add actionHandling code here
+                    if (actionHandler["CB" + j] && actionHandler["CB + j"].start) {
+                        for (k = 0; k < actionHandler["CB + j"].start.length; k += 1) {
+                            actionHandler["CB" + j].start[k](constructCallback({
+                                controller: i,
+                                delta: delta
+                            }));
+                        }
+                    }
+                }*/
+
                 // Button Up
-                if (!self.Gamepads[i].buttons[j].pressed && buttonState[j][j]) {
+                if (!self.Gamepads[i].buttons[j].pressed && buttonState[i][j]) {
                     buttonState[i][j] = false;
 
                     // Add actionHandling code here
+                    if (actionHandler["CB" + j] && actionHandler["CB + j"].end) {
+                        for (k = 0; k < actionHandler["CB + j"].end.length; k += 1) {
+                            actionHandler["CB" + j].end[k](constructCallback({
+                                controller: i,
+                                delta: delta
+                            }));
+                        }
+                    }
                 }
             }
+
+            // Check for axis movement
+            for (j = 0; j < self.Gamepads[i].axes.length; j += 1) {
+                // Check for leaving dead zone (Start)
+                if (Math.abs(self.Gamepads[i].axes[j]) > self.OPTIONS.axisDeadZone &&
+                        Math.abs(axisState[i][j]) < self.OPTIONS.axisDeadZone) {
+                    if (actionHandler["CA" + j] && actionHandler["CA" + j].start) {
+                        for (k = 0; k < actionHandler["CA" + j].start.length; k += 1) {
+                            actionHandler["CA" + j].start[k](constructCallback({
+                                controller: i,
+                                axis: self.Gamepads[i].axes[j],
+                                delta: delta
+                            }));
+                        }
+                    }
+                    if (debug) { console.log("Leaving Deadzone!", i, j); }
+                }
+
+                // Tick
+                if (Math.abs(axisState[i][j]) > self.OPTIONS.axisDeadZone) {
+                    if (actionHandler["CA" + j] && actionHandler["CA" + j].tick) {
+                        for (k = 0; k < actionHandler["CA" + j].tick.length; k += 1) {
+                            actionHandler["CA" + j].tick[k](constructCallback({
+                                controller: i,
+                                axis: self.Gamepads[i].axes[j],
+                                delta: delta
+                            }));
+                        }
+                    }
+                    if (debug) { console.log("Ticking out of deadzone", i, j); }
+                }
+
+                // Check for entering dead zone (End)
+                if (Math.abs(self.Gamepads[i].axes[j]) < self.OPTIONS.axisDeadZone &&
+                        Math.abs(axisState[i][j]) > self.OPTIONS.axisDeadZone) {
+                    if (actionHandler["CA" + j] && actionHandler["CA" + j].end) {
+                        for (k = 0; k < actionHandler["CA" + j].end.length; k += 1) {
+                            actionHandler["CA" + j].end[k](constructCallback({
+                                controller: i,
+                                axis: self.Gamepads[i].axes[j],
+                                delta: delta
+                            }));
+                        }
+                    }
+                    if (debug) { console.log("Entering Deadzone!", i, j); }
+                }
+
+                // Update state at end of life
+                axisState[i][j] = self.Gamepads[i].axes[j];
+            }
         }
+    };
+
+    /* Used to create object to send back to actionHandlers
+     *
+     * Possible Fields:
+     * delta* : Delta Time for smooth movement
+     * axis : Used for non boolean inputs / analogue
+     * controller: Controller number used (1-4 | null)
+     *
+     * *Required
+     */
+    //@TODO: Manage these values, probably remove quite a few of them
+    constructCallback = function (callbackObject) {
+        return {
+            delta: callbackObject.delta || console.error("No delta"),
+            axis: callbackObject.axis || null,
+            controller: callbackObject.controller || null
+        };
+    };
+
+    self.getActionHandler = function () {
+        return actionHandler;
     };
 
     return self;
