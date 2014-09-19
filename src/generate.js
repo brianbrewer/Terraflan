@@ -13,6 +13,9 @@ Terraflan.generate = (function () {
         console.log("Generating Image");
     };
 
+    self.tile = function () {
+    };
+
     self.decToUTF16 = function (dec) {
         var num;
 

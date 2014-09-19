@@ -63,7 +63,7 @@ Terraflan.loader = (function () {
                 pool: dsound.Pool
             }, soundLoaded);
 
-            console.log("Loading " + dsound.Name);
+            console.log("Loading sound '" + dsound.Name + "'");
 
             // Create for empty / undefined groups of sounds
             if (!Terraflan.Audio[dsound.Type]) {
@@ -98,7 +98,7 @@ Terraflan.loader = (function () {
             nimage.onload = imageLoaded;
             nimage.src = dimage.src;
 
-            console.log("Loading " + dimage.Name);
+            console.log("Loading image '" + dimage.Name + "'");
 
             // Create for empty / undefined groups of images
             if (!Terraflan.Image[dimage.Type]) {

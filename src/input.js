@@ -223,6 +223,7 @@ Terraflan.InputController = (function () {
 
     //@TODO: Flesh out
     self.removeActionHandler = function (actionName, state, callback) {
+        console.log(actionName, state, callback);
         throw ".removeActionHandler not implemented";
     };
 
@@ -324,7 +325,6 @@ Terraflan.InputController = (function () {
                 if (self.Gamepads[i].buttons[j].pressed && !buttonState[i][j]) {
                     buttonState[i][j] = true;
 
-                    // Add actionHandling code here
                     if (actionHandler["CB" + j] && actionHandler["CB + j"].start) {
                         for (k = 0; k < actionHandler["CB + j"].start.length; k += 1) {
                             actionHandler["CB" + j].start[k](constructCallback({
@@ -336,10 +336,7 @@ Terraflan.InputController = (function () {
                 }
 
                 // Tick
-                /*if (self.Gamepads[i].buttons[j].pressed && !buttonState[i][j]) {
-                    buttonState[i][j] = true;
-
-                    // Add actionHandling code here
+                if (self.Gamepads[i].buttons[j].pressed) {
                     if (actionHandler["CB" + j] && actionHandler["CB + j"].start) {
                         for (k = 0; k < actionHandler["CB + j"].start.length; k += 1) {
                             actionHandler["CB" + j].start[k](constructCallback({
@@ -348,13 +345,12 @@ Terraflan.InputController = (function () {
                             }));
                         }
                     }
-                }*/
+                }
 
                 // Button Up
                 if (!self.Gamepads[i].buttons[j].pressed && buttonState[i][j]) {
                     buttonState[i][j] = false;
 
-                    // Add actionHandling code here
                     if (actionHandler["CB" + j] && actionHandler["CB + j"].end) {
                         for (k = 0; k < actionHandler["CB + j"].end.length; k += 1) {
                             actionHandler["CB" + j].end[k](constructCallback({

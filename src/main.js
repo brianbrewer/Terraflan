@@ -85,7 +85,7 @@
 var Terraflan = (function () {
     "use strict";
 
-	var self = {},
+    var self = {},
         currentTime,
         previousTime,
         updateChunks,
@@ -108,8 +108,8 @@ var Terraflan = (function () {
         CHUNK_HEIGHT: 64,
         SCREEN_WIDTH: 800,
         SCREEN_HEIGHT: 600,
-        WORLD_WIDTH: 16,
-        WORLD_HEIGHT: 8
+        WORLD_WIDTH: 3,
+        WORLD_HEIGHT: 2
     };
 
     // Canvas Container
@@ -244,7 +244,7 @@ var Terraflan = (function () {
                     self.WORLD.CAMERA_X += (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
                 }
             } else {
-                self.WORLD.CAMERA_X += (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+                self.WORLD.CAMERA_X += 200 / 1000 * callbackObject.delta;
             }
         });
 
@@ -254,7 +254,7 @@ var Terraflan = (function () {
                     self.WORLD.CAMERA_Y += (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
                 }
             } else {
-                self.WORLD.CAMERA_Y += (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+                self.WORLD.CAMERA_Y += 200 / 1000 * callbackObject.delta;
             }
         });
 
@@ -264,7 +264,7 @@ var Terraflan = (function () {
                     self.WORLD.CAMERA_Y -= (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
                 }
             } else {
-                self.WORLD.CAMERA_Y -= (200 * Math.abs(callbackObject.axis)) / 1000 * callbackObject.delta;
+                self.WORLD.CAMERA_Y -= 200 / 1000 * callbackObject.delta;
             }
         });
 
@@ -314,5 +314,40 @@ var Terraflan = (function () {
         self.update(); // Remove later also :D
     };
 
-	return self;
+    self.webwork = function (x, y) {
+        var worker;
+
+        worker = new Worker("src/worker/chunker.js");
+
+        worker.addEventListener("message", function (e) {
+            var canvas,
+                context,
+                imageData,
+                i;
+
+            canvas = document.createElement("canvas");
+            canvas.width = 64;
+            canvas.height = 64;
+            context = canvas.getContext("2d");
+
+            imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+            for (i = 0; i < e.data.length; i += 1) {
+                imageData.data[i] = e.data[i];
+            }
+
+            context.putImageData(imageData, 0, 0);
+
+            document.body.appendChild(canvas);
+
+            console.log(e.data);
+        });
+
+        worker.postMessage({
+            x: x,
+            y: y
+        });
+    };
+
+    return self;
 }());
